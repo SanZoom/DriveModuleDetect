@@ -5,16 +5,16 @@ import time
 
 DEBUG = True
 
-cap = cv2.VideoCapture(4)
-_, image = cap.read()
+cap = cv2.VideoCapture(0)
 face_detector = Detector.FaceDetector()
 person_state = {}
 face_judger = Detector.PoseJudge()
 driver_state_detector = Detector.DriveDetect()
 serial_port = SerialPort.SerialPort()
 
+# _, image = cap.read()
 # video_write = cv2.VideoWriter('test.mp4', cv2.VideoWriter_fourcc('M', 'P', '4', 'V'), 30.0,
-                            #   (image.shape[1], image.shape[0]))
+#                               (image.shape[1], image.shape[0]))
 
 # 绘制正方体12轴
 line_pairs = [[0, 1], [1, 2], [2, 3], [3, 0],
@@ -34,7 +34,7 @@ while True:
         reprojectdst, euler_angle = face_judger.getHeadState(pointDict)
 
         # 最后需要传输的结果
-        # person_state = driver_state_detector.run(image)
+        person_state = driver_state_detector.run(image)
         pose_result = face_judger.judge(pointDict, timestamp)
         serial_port.send(person_state, pose_result)
 

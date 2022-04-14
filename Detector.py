@@ -244,17 +244,13 @@ DEBUG = False
 class DriveDetect:
     def __init__(self, wheel_location=1):
         self.__request_url = "https://aip.baidubce.com/rest/2.0/image-classify/v1/driver_behavior?access_token="
-        self.__access_token = '24.a82118d8f2af2f722a99a0c4e4d0bab9.2592000.1648635936.282335-25630710'
-        self.__token_date = 0
-        self.__token_expires = 2592000
-
         self.__wheel_location = wheel_location
         self.__headers = {'content-type': 'application/x-www-form-urlencoded'}
-
         self.__host = 'https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=vkX271KZeuoRUb9nyrHK8TMK&client_secret=KbrUE3Mo1dTMcHE0U1bPmQKQuwOW4FoH&'
 
+        self.__getToken()
         self.__USE_LAST_TIME = time.time()  # 调用计时器
-        self.__USE_FREQUENCY = 10  # 每10s使用一次
+        self.__USE_FREQUENCY = 8  # 每10s使用一次
 
         self.person_state = {}
         self.__SEND_FREQUENCY = 3    # 连续发送三秒
@@ -300,14 +296,27 @@ class DriveDetect:
             return self.person_state
 
     def __getToken(self):
-        response = requests.get(self.__host)
-        if response:
-            json_dict = json.loads(response.text)
-            self.__token_date = time.time()
-            self.__access_token = json_dict["access_token"]
-            self.__token_expires = json_dict["expires_in"]
+        fs = cv2.FileStorage('./configure.xml', cv2.FILE_STORAGE_READ)
+        self.__access_token = fs.getNode("access_token").string()
+        self.__token_expires = fs.getNode("expires_in").real()
+        self.__token_date = fs.getNode("token_date").real()
+        fs.release()
 
+        if self.__token_date + self.__token_expires < time.time():
+            print("Updating the token...")
+            response = requests.get(self.__host)
+            if response:
+                json_dict = json.loads(response.text)
+                self.__access_token = json_dict["access_token"]
+                self.__token_expires = json_dict["expires_in"]
+                self.__token_date = time.time()
 
+                fs = cv2.FileStorage('./configure.xml', cv2.FILE_STORAGE_WRITE)
+                fs.write("access_token", self.__access_token)
+                fs.write("expires_in", self.__token_expires)
+                fs.write("token_date", self.__token_date)
+                fs.release()
+                print("Update done")
 # 废案yolo
 # class SmokePhoneDetector:
 #     def __init__(self):
