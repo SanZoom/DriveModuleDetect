@@ -16,8 +16,9 @@
   通过调用百度AI的驾驶行为分析API完成抽烟以及使用手机等检测。
 
 ## 2.环境配置
-  计算平台：树莓派4B 4g  
-  系统：Raspbian OS 64bits  
+  计算平台：RockPi4B 4g  
+  系统：Raspbian OS 64bits 
+  库：cv2, mediapipe, pyserial
   
 ## 3. 流程图
 ![](./DriveMoudleDetect.png)
